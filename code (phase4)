@@ -1,0 +1,70 @@
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import RandomForestRegressor
+import matplotlib.pyplot as plt
+import time
+import random
+
+# Simulate real-time IoT data from smart meters (Energy usage in kWh)
+def simulate_iot_data():
+    # Data for 24 hours
+    return [random.uniform(1.5, 4.5) if 6 <= hour <= 23 else random.uniform(0.5, 2.0) for hour in range(24)]
+
+# Prepare training data (for demonstration)
+def generate_training_data():
+    data = []
+    for day in range(100):
+        daily_usage = simulate_iot_data()
+        for hour, usage in enumerate(daily_usage):
+            temperature = random.uniform(20, 40)  # Simulated temp
+            humidity = random.uniform(40, 70)
+            data.append([hour, temperature, humidity, usage])
+    return pd.DataFrame(data, columns=['Hour', 'Temperature', 'Humidity', 'EnergyUsage'])
+
+# Train model to predict energy usage
+def train_model(df):
+    X = df[['Hour', 'Temperature', 'Humidity']]
+    y = df['EnergyUsage']
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    model.fit(X, y)
+    return model
+
+# Predict next 24-hour usage using current weather conditions
+def predict_usage(model):
+    predictions = []
+    for hour in range(24):
+        temp = random.uniform(25, 35)
+        hum = random.uniform(40, 60)
+        prediction = model.predict([[hour, temp, hum]])[0]
+        predictions.append(prediction)
+    return predictions
+
+# Adjust energy distribution based on prediction
+def adjust_distribution(predictions):
+    print("\n--- Energy Distribution Plan ---")
+    for hour, energy in enumerate(predictions):
+        if energy > 4.0:
+            print(f"Hour {hour:02d}: High Demand ({energy:.2f} kWh) - Allocate Extra Power")
+        elif energy < 1.5:
+            print(f"Hour {hour:02d}: Low Demand ({energy:.2f} kWh) - Reduce Allocation")
+        else:
+            print(f"Hour {hour:02d}: Normal Demand ({energy:.2f} kWh) - Maintain Supply")
+
+# Main execution
+if _name_ == "_main_":
+    print("Generating AI model on historical IoT energy data...")
+    training_data = generate_training_data()
+    model = train_model(training_data)
+
+    print("\nPredicting energy usage for next 24 hours...")
+    future_predictions = predict_usage(model)
+
+    adjust_distribution(future_predictions)
+
+    # Optional: Plot energy demand
+    plt.plot(future_predictions, marker='o')
+    plt.title("Predicted Energy Demand (Next 24 Hours)")
+    plt.xlabel("Hour of Day")
+    plt.ylabel("Energy Usage (kWh)")
+    plt.grid(True)
+    plt.show()
